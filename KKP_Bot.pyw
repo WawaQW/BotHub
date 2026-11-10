@@ -3,9 +3,8 @@ import ctypes
 import threading
 import time
 import tkinter as tk
-from tkinter import ttk, messagebox
-
 import pyautogui
+from tkinter import ttk, messagebox
 
 # ====== KONFIGURASI ======
 START_DELAY = 0.1
@@ -16,48 +15,27 @@ WHEEL_DELTA = 120 if sys.platform == "win32" else 1
 
 # ----- Helper hotkey -----
 def click(x=None, y=None, double=False):
-    """Klik kiri di koordinat layar (x, y). double=True untuk klik ganda.
-    Tanpa koordinat, click() mengklik di posisi pointer saat ini."""
     return {"type": "click", "x": x, "y": y, "double": "double"}
 
-
 def move(x, y, duration=0.0):
-    """Pindahkan pointer ke (x, y) TANPA klik."""
     return {"type": "move", "x": x, "y": y, "duration": duration}
 
-
 def scroll(amount, x=None, y=None, duration=0.0):
-    """Scroll mouse. amount = jumlah langkah roda (boleh desimal).
-    Positif = ke atas, negatif = ke bawah. Jika x, y diisi, pointer dipindah
-    dulu ke sana (tanpa klik)."""
     return {"type": "scroll", "amount": amount, "x": x, "y": y, "duration": duration}
 
-
 def wait(sec):
-    """Tunggu sekian detik."""
     return {"type": "wait", "sec": sec}
 
-
 def focus(title):
-    """Aktifkan jendela yang judulnya mengandung `title` (tanpa tombol Win).
-    Huruf besar/kecil tidak berpengaruh. Khusus Windows."""
     return {"type": "focus", "title": title}
 
-
 def tab(name, max_tabs=15):
-    """Pilih tab gambar AutoCAD yang judulnya mengandung `name` (mis. "TONGGORISA"
-    atau "23061605_TONGGORISA.dwg"). Jendela AutoCAD harus sudah aktif (pakai
-    focus() dulu). Tab ditelusuri dengan Ctrl+Tab maksimal `max_tabs` kali.
-    Huruf besar/kecil tidak berpengaruh. Khusus Windows."""
     return {"type": "tab", "name": name, "max_tabs": max_tabs}
 
-
 def write(text, interval=0.03):
-    """Ketik teks biasa (misalnya perintah AutoCAD seperti "FIND")."""
     return {"type": "write", "text": text, "interval": interval}
 
 
-# ----- Kode tombol virtual Windows (dipakai untuk pengiriman tombol langsung) -----
 VK_CODES = {
     "ctrl": 0x11, "shift": 0x10, "alt": 0x12, "win": 0x5B,
     "up": 0x26, "down": 0x28, "left": 0x25, "right": 0x27,
@@ -71,27 +49,20 @@ VK_CODES.update({f"f{i}": 0x6F + i for i in range(1, 13)})
 EXTENDED_VKS = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B, 0x5C}
 
 
-# ====== DAFTAR TOMBOL ======
-# Judul jendela AutoCAD biasanya "Autodesk AutoCAD 2024 - [nama.dwg]".
-# Sesuaikan teks di focus() dengan title bar AutoCAD Anda.
 BUTTONS = [
     ("Spreadsheet Copy", [focus("Edge"),tab("Peningkatan KW 456 SP Kab Bima"), ("down",), ("ctrl", "c"), ("ctrl", "2"), move(1206, 122)]),
-    # ("Coba", [focus("Bidang Terdampak - Google Spreadsheet dan 3 halaman lainnya - Profil 1 - Microsoft Edge"), ("down",), ("ctrl", "c"), ("ctrl", "2"), move(1206, 122)]),
     ("Paste K4", [click(245, 225), ("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",), ("tab",), ("enter",), ("down",), ("down",), ("enter",), ("tab",),("enter",),("enter",),move(193,461)]),
     ("Paste Bidang Terdampak", [("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",)]),
 
 ]
-# =========================
 
 pyautogui.FAILSAFE = True  # Gerakkan mouse ke pojok kiri atas untuk membatalkan
-
 
 def is_admin():
     try:
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
     except Exception:
         return False
-
 
 class HotkeyApp(tk.Tk):
     def __init__(self):
@@ -113,14 +84,6 @@ class HotkeyApp(tk.Tk):
                 text=label,
                 command=lambda s=sequence, l=label: self.run_sequence(l, s),
             ).pack(fill="x", pady=5, ipady=8)
-
-        ttk.Button(
-            frame, text="📍 Cek Posisi Mouse (3 detik)", command=self.pick_position
-        ).pack(fill="x", pady=(15, 5), ipady=4)
-
-        ttk.Button(
-            frame, text="🔎 Info Jendela Aktif (3 detik)", command=self.inspect_window
-        ).pack(fill="x", pady=5, ipady=4)
 
         ttk.Label(
             frame, textvariable=self.status, foreground="gray",
