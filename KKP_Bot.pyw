@@ -50,7 +50,7 @@ EXTENDED_VKS = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B
 
 
 BUTTONS = [
-    ("Spreadsheet Copy", [focus("Edge"),tab("Peningkatan KW 456 SP Kab Bima"), ("down",), ("ctrl", "c"), ("ctrl", "2"), move(1206, 122)]),
+    ("Spreadsheet Copy", [focus("Edge"),("ctrl","1"), ("down",), ("ctrl", "c"), ("ctrl", "2"), move(1206, 122)]),
     ("Paste K4", [click(245, 225), ("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",), ("tab",), ("enter",), ("down",), ("down",), ("enter",), ("tab",),("enter",),("enter",),move(193,461)]),
     ("Paste Bidang Terdampak", [("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",)]),
 
@@ -67,15 +67,15 @@ def is_admin():
 class HotkeyApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("BPN KKP Fast" + (" [Admin]" if is_admin() else ""))
-        self.geometry("320x" + str(90 + 55 * (len(BUTTONS) + 2)))
+        self.title("KKP" + (" [Admin]" if is_admin() else ""))
+        # self.geometry(f"200x{self.winfo_reqheight()}")
         self.attributes("-topmost", True)
         self.after(100, self._no_focus)
         self.resizable(False, False)
         self.status = tk.StringVar(value="MagangHub Kantah Bima")
         self.busy = False
 
-        frame = ttk.Frame(self, padding=12)
+        frame = ttk.Frame(self, padding=(1, 1))
         frame.pack(fill="both", expand=True)
 
         for label, sequence in BUTTONS:
@@ -87,8 +87,14 @@ class HotkeyApp(tk.Tk):
 
         ttk.Label(
             frame, textvariable=self.status, foreground="gray",
-            wraplength=290, justify="center",
+            wraplength=175, justify="center",
         ).pack(side="bottom", pady=(10, 0))
+                # Letakkan jendela di pojok kanan atas
+        self.update_idletasks()
+        width, margin = 200, 10
+        height = self.winfo_reqheight()
+        x = self.winfo_screenwidth() - width - margin
+        self.geometry(f"{width}x{height}+{x}+{margin}")
 
     # ---------- Menjalankan urutan ----------
     def run_sequence(self, label, sequence):
