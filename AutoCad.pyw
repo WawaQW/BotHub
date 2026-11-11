@@ -8,17 +8,23 @@ from tkinter import ttk, messagebox
 import pyautogui
 
 # ====== KONFIGURASI ======
-START_DELAY = 0.1
+START_DELAY = 0.1   
 STEP_DELAY = 0.1
 KEY_HOLD = 0.05      # lama menahan tiap tombol (detik); naikkan jika AutoCAD kadang tidak merespons
 WHEEL_DELTA = 120 if sys.platform == "win32" else 1   # 1 langkah roda mouse di Windows
 
 
 # ----- Helper untuk langkah selain hotkey -----
-def click(x=None, y=None, double=False):
-    """Klik kiri di koordinat layar (x, y). double=True untuk klik ganda.
-    Tanpa koordinat, click() mengklik di posisi pointer saat ini."""
-    return {"type": "click", "x": x, "y": y, "double": double}
+
+def click(x=None, y=None, double=False, button="left"):
+    """Klik di koordinat layar (x, y). double=True untuk klik ganda.
+    button="right" untuk klik kanan. Tanpa koordinat, klik di posisi pointer."""
+    return {"type": "click", "x": x, "y": y, "double": double, "button": button}
+
+
+def right_click(x=None, y=None):
+    """Klik kanan di koordinat layar (x, y)."""
+    return click(x, y, button="right")
 
 
 def move(x, y, duration=0.0):
@@ -31,6 +37,14 @@ def scroll(amount, x=None, y=None, duration=0.0):
     Positif = ke atas, negatif = ke bawah. Jika x, y diisi, pointer dipindah
     dulu ke sana (tanpa klik)."""
     return {"type": "scroll", "amount": amount, "x": x, "y": y, "duration": duration}
+
+
+def scroll_loop(step, x=None, y=None, duration=0.0):
+    """Scroll yang bertambah di setiap klik tombol: klik ke-1 = step,
+    klik ke-2 = 2 x step, klik ke-3 = 3 x step, dst.
+    Hitungan tersimpan selama program berjalan (tutup & buka lagi untuk mengulang dari 1)."""
+    return {"type": "scroll", "amount": step, "x": x, "y": y, "duration": duration,
+            "loop": True, "count": 0}
 
 
 def wait(sec):
@@ -75,7 +89,7 @@ EXTENDED_VKS = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B
 # Judul jendela AutoCAD biasanya "Autodesk AutoCAD 2024 - [nama.dwg]".
 # Sesuaikan teks di focus() dengan title bar AutoCAD Anda.
 BUTTONS = [
-    ("Find", [focus("Edge"),("ctrl", "1"),("ctrl", "c"),focus("Autodesk AutoCAD"),("ctrl", "up"),("ctrl", "v"),("alt", "f"),("esc",)]),
+    ("Find", [focus("Edge"),("ctrl", "1"),("ctrl", "c"),focus("Autodesk AutoCAD"),("ctrl", "up"),("ctrl", "v"),("alt", "f"),("esc",),("esc",)]),
     ("Boudery", [focus("Autodesk AutoCAD"), ("ctrl", "down"), ("enter",), wait(0.5), click(834,373),("enter",)]),
     # ("Bordery", [focus("Autodesk AutoCAD"),scroll(-50, 841, 323),("ctrl", "down"),("enter",),click(841, 323),("enter",),]),
     ("Paste Persil", [focus("Autodesk AutoCAD"),("ctrl", "c"),("ctrl", "tab"),("ctrl", "v"),move(1209, 70),]),
@@ -98,7 +112,7 @@ def is_admin():
 class HotkeyApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("AutoCad" + (" [Admin]" if is_admin() else ""))
+        self.title("Tataletak Bot" + (" [Admin]" if is_admin() else ""))
         # self.geometry("320x" + str(90 + 55 * (len(BUTTONS) + 2)))
         self.attributes("-topmost", True)
         self.after(100, self._no_focus)
@@ -140,16 +154,20 @@ class HotkeyApp(tk.Tk):
         try:
             self._set_status(f"Menjalankan: {label}")
             self.after(0, self.withdraw)      # sembunyikan jendela selama proses
-            time.sleep(0.15 + START_DELAY)
-            time.sleep(START_DELAY)
+            time.sleep(0.15 + START_DELAY)    # beri waktu jendela hilang sebelum langkah pertama
             for step in sequence:
                 if isinstance(step, dict):
                     kind = step["type"]
                     if kind == "click":
                         x, y = step["x"], step["y"]
-                        pyautogui.click(x, y, clicks=2 if step["double"] else 1)
+                        pyautogui.click(
+                            x, y,
+                            clicks=2 if step["double"] else 1,
+                            button=step.get("button", "left"),
+                        )
                         where = "posisi pointer" if x is None else f"({x}, {y})"
-                        self._set_status(f"Klik: {where}")
+                        kind_txt = "Klik kanan" if step.get("button") == "right" else "Klik"
+                        self._set_status(f"{kind_txt}: {where}")
                     elif kind == "move":
                         pyautogui.moveTo(step["x"], step["y"], duration=step["duration"])
                         self._set_status(f"Pointer ke: ({step['x']}, {step['y']})")
@@ -157,13 +175,23 @@ class HotkeyApp(tk.Tk):
                         if step["x"] is not None:
                             pyautogui.moveTo(step["x"], step["y"], duration=step["duration"])
                             time.sleep(0.1)
-                        remaining = int(step["amount"] * WHEEL_DELTA)
+                        total = step["amount"]
+                        if step.get("loop"):
+                            step["count"] += 1
+                            total = round(step["amount"] * step["count"], 4)
+                        remaining = int(total * WHEEL_DELTA)
                         limit = 30 * WHEEL_DELTA          # maks 30 langkah per event
-                        while remaining != 0:
-                            chunk = max(-limit, min(limit, remaining))
-                            pyautogui.scroll(chunk)
-                            remaining -= chunk
-                        self._set_status(f"Scroll: {step['amount']}")
+                        old_pause = pyautogui.PAUSE
+                        pyautogui.PAUSE = 0               # tanpa jeda 0,1 detik per potongan
+                        try:
+                            while remaining != 0:
+                                chunk = max(-limit, min(limit, remaining))
+                                pyautogui.scroll(chunk)
+                                remaining -= chunk
+                                time.sleep(0.005)         # beri waktu aplikasi memproses
+                        finally:
+                            pyautogui.PAUSE = old_pause
+                        self._set_status(f"Scroll: {total}")
                     elif kind == "wait":
                         self._set_status(f"Tunggu {step['sec']} detik")
                         time.sleep(step["sec"])
@@ -192,7 +220,7 @@ class HotkeyApp(tk.Tk):
     def _show_window(self):
         self.deiconify()
         self.attributes("-topmost", True)
-        self.after(100, self._no_focus)   # pasang lagi agar klik tidak mencuri fokus
+        self.after(100, self._no_focus)       # pasang lagi agar klik tidak mencuri fokus
 
     # ---------- Pengiriman tombol ----------
     def _key_event(self, key, up=False):

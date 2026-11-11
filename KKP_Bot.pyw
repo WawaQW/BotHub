@@ -111,7 +111,6 @@ class HotkeyApp(tk.Tk):
             self._set_status(f"Menjalankan: {label}")
             self.after(0, self.withdraw)      # sembunyikan jendela selama proses
             time.sleep(0.15 + START_DELAY)    # beri waktu jendela hilang sebelum langkah pertama
-            time.sleep(START_DELAY)
             for step in sequence:
                 if isinstance(step, dict):
                     kind = step["type"]
