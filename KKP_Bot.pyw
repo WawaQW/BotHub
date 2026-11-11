@@ -67,7 +67,7 @@ def is_admin():
 class HotkeyApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("KKP" + (" [Admin]" if is_admin() else ""))
+        self.title("KKP Bot" + (" [Admin]" if is_admin() else ""))
         # self.geometry(f"200x{self.winfo_reqheight()}")
         self.attributes("-topmost", True)
         self.after(100, self._no_focus)

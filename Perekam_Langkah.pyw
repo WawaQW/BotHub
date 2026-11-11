@@ -208,7 +208,7 @@ def fmt(step, scroll_pos=True):
 class Recorder(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title(APP_TITLE)
+        self.title("Recorder")
         self.geometry("460x560")
         self.attributes("-topmost", True)
         self.protocol("WM_DELETE_WINDOW", self._close)

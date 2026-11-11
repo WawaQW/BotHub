@@ -98,15 +98,15 @@ def is_admin():
 class HotkeyApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("BPN AutoCAD Fast" + (" [Admin]" if is_admin() else ""))
-        self.geometry("320x" + str(90 + 55 * (len(BUTTONS) + 2)))
+        self.title("AutoCad" + (" [Admin]" if is_admin() else ""))
+        # self.geometry("320x" + str(90 + 55 * (len(BUTTONS) + 2)))
         self.attributes("-topmost", True)
         self.after(100, self._no_focus)
         self.resizable(False, False)
         self.status = tk.StringVar(value="MagangHub Kantah Bima")
         self.busy = False
 
-        frame = ttk.Frame(self, padding=12)
+        frame = ttk.Frame(self, padding=(1, 1))
         frame.pack(fill="both", expand=True)
 
         for label, sequence in BUTTONS:
@@ -116,18 +116,16 @@ class HotkeyApp(tk.Tk):
                 command=lambda s=sequence, l=label: self.run_sequence(l, s),
             ).pack(fill="x", pady=5, ipady=8)
 
-        ttk.Button(
-            frame, text="📍 Cek Posisi Mouse (3 detik)", command=self.pick_position
-        ).pack(fill="x", pady=(15, 5), ipady=4)
-
-        ttk.Button(
-            frame, text="🔎 Info Jendela Aktif (3 detik)", command=self.inspect_window
-        ).pack(fill="x", pady=5, ipady=4)
-
         ttk.Label(
             frame, textvariable=self.status, foreground="gray",
-            wraplength=290, justify="center",
+            wraplength=175, justify="center",
         ).pack(side="bottom", pady=(10, 0))
+                        # Letakkan jendela di pojok kanan atas
+        self.update_idletasks()
+        width, margin = 200, 10
+        height = self.winfo_reqheight()
+        x = self.winfo_screenwidth() - width - margin
+        self.geometry(f"{width}x{height}+{x}+{margin}")
 
     # ---------- Menjalankan urutan ----------
     def run_sequence(self, label, sequence):
