@@ -139,6 +139,8 @@ class HotkeyApp(tk.Tk):
     def _worker(self, label, sequence):
         try:
             self._set_status(f"Menjalankan: {label}")
+            self.after(0, self.withdraw)      # sembunyikan jendela selama proses
+            time.sleep(0.15 + START_DELAY)
             time.sleep(START_DELAY)
             for step in sequence:
                 if isinstance(step, dict):
@@ -185,6 +187,12 @@ class HotkeyApp(tk.Tk):
             self._set_status(f"Error: {e}")
         finally:
             self.busy = False
+            self.after(0, self._show_window)  # munculkan lagi setelah selesai / error
+
+    def _show_window(self):
+        self.deiconify()
+        self.attributes("-topmost", True)
+        self.after(100, self._no_focus)   # pasang lagi agar klik tidak mencuri fokus
 
     # ---------- Pengiriman tombol ----------
     def _key_event(self, key, up=False):
