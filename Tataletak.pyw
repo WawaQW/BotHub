@@ -92,7 +92,7 @@ BUTTONS = [
 ("Find", [focus("Edge"),("down",),("ctrl", "c"),focus("Tataletak - Kementerian"),click(426, 137),click(1088, 744),write("find"),("enter",),("ctrl", "v"),("enter",), ("tab",), ("tab",), ("tab",), ("tab",), ("enter",), ("esc", ),scroll(-500,737,412)]),
 ("Copy SU", [focus("Tataletak - Kementerian"),click(1299, 98),right_click(741, 366),("ctrl", "n"),click(1331, 100),click(564, 748),click(765, 652),click(765, 652),click(765, 652),click(765, 652),click(765, 652),("esc",),focus("Tataletak - Kementerian"),click(707, 746),focus("Edge"),("left",),("enter",),("ctrl", "shift", "left"),("ctrl", "c"),focus("Tataletak - Kementerian"),click(175, 466),("ctrl", "a"),("ctrl", "v"),focus("Edge"),("left",),("left",),("ctrl", "shift", "left"),("ctrl", "c"),focus("Tataletak - Kementerian"),click(185, 432),("ctrl", "a"),("ctrl", "v"),click(317, 467),focus(("Edge"))]),
 ("Split", [focus("Desain Surat Ukur"),("win", "left"),("win", "1"),focus("Edge"),
-]),("Upload", [("esc",),focus("Edge"),("esc",),("right",),("ctrl", "c"),click(939, 277),click(1035, 368),click(245, 192),("esc",),("ctrl", "s"),("ctrl", "v"),("enter",),("ctrl", "w"),]),
+]),("Upload", [("esc",),focus("Edge"),("esc",),("right",),("ctrl", "c"),click(939, 180),click(1035, 271),click(245, 192),("esc",),("ctrl", "s"),("ctrl", "v"),("enter",),("ctrl", "w"),]),
 ]
 # =========================
 
