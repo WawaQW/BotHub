@@ -72,12 +72,9 @@ EXTENDED_VKS = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B
 
 
 # ====== DAFTAR TOMBOL ======
-# Judul jendela AutoCAD biasanya "Autodesk AutoCAD 2024 - [nama.dwg]".
-# Sesuaikan teks di focus() dengan title bar AutoCAD Anda.
 BUTTONS = [
     ("Find", [focus("Edge"),("ctrl", "1"),("ctrl", "c"),focus("Autodesk AutoCAD"),("ctrl", "up"),("ctrl", "v"),("alt", "f"),("esc",)]),
     ("Boudery", [focus("Autodesk AutoCAD"), ("ctrl", "down"), ("enter",), wait(0.5), click(834,373),("enter",)]),
-    # ("Bordery", [focus("Autodesk AutoCAD"),scroll(-50, 841, 323),("ctrl", "down"),("enter",),click(841, 323),("enter",),]),
     ("Paste Persil", [focus("Autodesk AutoCAD"),("ctrl", "c"),("ctrl", "tab"),("ctrl", "v"),move(1209, 70),]),
     ("Konfirmasi Persil", [focus("Autodesk AutoCAD"),("ctrl", "c"),("ctrl", "tab"),("ctrl", "v"),wait(0.5),tab("23061605_TONGGORISA.dwg"),focus("Edge"),click(803, 207),click(875, 296),("down",),move(1229, 71),]),
     ("Gettile", [focus("Autodesk AutoCAD"), ("gettile"), ("enter",), wait(0.5), ("tab",), ("tab",), ("down",), ("tab",), ("tab",), ("tab",), ("tab",),("enter",) ]),
@@ -85,7 +82,7 @@ BUTTONS = [
 ]
 # =========================
 
-pyautogui.FAILSAFE = True  # Gerakkan mouse ke pojok kiri atas untuk membatalkan
+pyautogui.FAILSAFE = True
 
 
 def is_admin():
@@ -99,7 +96,6 @@ class HotkeyApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("AutoCad" + (" [Admin]" if is_admin() else ""))
-        # self.geometry("320x" + str(90 + 55 * (len(BUTTONS) + 2)))
         self.attributes("-topmost", True)
         self.after(100, self._no_focus)
         self.resizable(False, False)
@@ -139,7 +135,8 @@ class HotkeyApp(tk.Tk):
     def _worker(self, label, sequence):
         try:
             self._set_status(f"Menjalankan: {label}")
-            time.sleep(START_DELAY)
+            self.after(0, self.withdraw)      # sembunyikan jendela selama proses
+            time.sleep(0.15 + START_DELAY)    # beri waktu jendela hilang sebelum langkah pertama
             for step in sequence:
                 if isinstance(step, dict):
                     kind = step["type"]
@@ -185,6 +182,12 @@ class HotkeyApp(tk.Tk):
             self._set_status(f"Error: {e}")
         finally:
             self.busy = False
+            self.after(0, self._show_window)  # munculkan lagi setelah selesai / error
+
+    def _show_window(self):
+        self.deiconify()
+        self.attributes("-topmost", True)
+        self.after(100, self._no_focus)       # pasang lagi agar klik tidak mencuri fokus
 
     # ---------- Pengiriman tombol ----------
     def _key_event(self, key, up=False):
@@ -279,10 +282,10 @@ class HotkeyApp(tk.Tk):
             raise RuntimeError("tab() hanya untuk Windows")
         target = name.lower()
         if target in self._foreground_title().lower():
-            return                                   # sudah di tab yang benar
+            return
         for _ in range(max_tabs):
             self._press_combo(("ctrl", "tab"))
-            time.sleep(0.4)                          # beri waktu AutoCAD ganti tab
+            time.sleep(0.4)
             if target in self._foreground_title().lower():
                 return
         raise RuntimeError(f"Tab '{name}' tidak ditemukan")
@@ -352,18 +355,18 @@ class HotkeyApp(tk.Tk):
         u32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
 
         exe = "?"
-        window_elevated = None        # True / False / None (tidak bisa dibaca)
-        hproc = k32.OpenProcess(0x1000, False, pid.value)   # QUERY_LIMITED_INFORMATION
+        window_elevated = None
+        hproc = k32.OpenProcess(0x1000, False, pid.value)
         if hproc:
             size = wintypes.DWORD(520)
             path = ctypes.create_unicode_buffer(520)
             if k32.QueryFullProcessImageNameW(hproc, 0, path, ctypes.byref(size)):
                 exe = path.value.rsplit("\\", 1)[-1]
             htok = wintypes.HANDLE()
-            if a32.OpenProcessToken(hproc, 0x0008, ctypes.byref(htok)):   # TOKEN_QUERY
+            if a32.OpenProcessToken(hproc, 0x0008, ctypes.byref(htok)):
                 val = wintypes.DWORD()
                 ret = wintypes.DWORD()
-                if a32.GetTokenInformation(      # 20 = TokenElevation
+                if a32.GetTokenInformation(
                     htok, 20, ctypes.byref(val), ctypes.sizeof(val), ctypes.byref(ret)
                 ):
                     window_elevated = bool(val.value)
