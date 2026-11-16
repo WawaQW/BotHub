@@ -86,7 +86,9 @@ BUTTONS = [
     # ("Spreadsheet Copy", [("win", "4"), click(879, 232), move(1297, 719), ]),
     ("Mulai", [focus("Sitata - Validasi"), click(879, 232), move(1206, 116), ]),
     ("Verikasi", [focus("Sitata - Validasi"), click(1297, 719),move(1224, 160),]),
-    ("Ganti", [focus("Sitata - Validasi"), click(517, 728),move(884, 231), scroll_loop(-0.4835), click(884, 231),move(1218,122),]),
+    ("Ganti", [focus("Sitata - Validasi"), click(517, 728),move(891, 235), scroll_loop(-0.7), click(891, 235),move(1218,122),]),
+    # ("Ganti", [focus("Sitata - Validasi"), click(517, 728),scroll(-0.7, 891, 235), click(891, 235),move(1218,122),]),
+
     # ("Verikasi", [focus("Sitata - Validasi"), click(517, 728),move(884, 231), scroll(-5)]),
 ]
 # =========================
