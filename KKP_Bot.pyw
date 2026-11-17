@@ -52,7 +52,8 @@ EXTENDED_VKS = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B
 BUTTONS = [
     ("Spreadsheet Copy", [focus("Edge"),("ctrl","1"), ("down",), ("ctrl", "c"), ("ctrl", "2"), move(1206, 122)]),
     ("Paste K4", [click(245, 225), ("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",), ("tab",), ("enter",), ("down",), ("down",), ("enter",), ("tab",),("enter",),("enter",),move(193,461)]),
-    ("Paste Bidang Terdampak", [("ctrl", "v"), ("tab",), ("enter",), ("tab",), ("tab",)]),
+    ("Paste Bidang Terdampak", [click(245, 225), ("ctrl", "v"), ("enter",),]),
+    # ("Paste Bidang Terdampak", [click(245, 225), ("ctrl", "v"), ("tab",),("tab",), ("enter",),]),
 
 ]
 
